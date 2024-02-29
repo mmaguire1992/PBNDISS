@@ -61,33 +61,30 @@ def paint_by_numbers(image_path, bucket_name, folder_name, difficulty):
     colored_output = create_colored_output(image, segments, kmeans)
     verify_numpy_array(colored_output, "creating colored output")
 
-    # Ensure this generates an image and saves it, returning the path
     color_key_path = create_color_key(kmeans.cluster_centers_, "/tmp")
 
-    # Prepare and upload files
     files_to_upload = [
-        (pbn_output, "pbn_output.png", False),  # False indicates it's an image array
+        (pbn_output, "pbn_output.png", False),  
         (
             colored_output,
             "colored_output.png",
             False,
-        ),  # False indicates it's an image array
-        (color_key_path, "color_key.png", True),  # True indicates it's already a path
+        ),  
+        (color_key_path, "color_key.png", True),  
     ]
 
     for item, filename, is_path in files_to_upload:
         unique_filename = generate_unique_filename(filename)
         if not is_path:
-            # It's an image array that needs saving
+           
             temp_path = f"/tmp/{unique_filename}"
             save_image(item, temp_path)
             print(f"Saved {filename} to {temp_path}")
         else:
-            # It's already a file path
+
             temp_path = item
             print(f"{filename} is already saved at {temp_path}")
 
-        # Upload the file
         uploaded_url = upload_to_gcloud(
             bucket_name, temp_path, f"{folder_name}/{unique_filename}"
         )
