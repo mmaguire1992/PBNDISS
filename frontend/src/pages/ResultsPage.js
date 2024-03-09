@@ -1,16 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
 
 function ResultsPage() {
-
   const urlParams = new URLSearchParams(window.location.search);
-  const pbnOutputUrl = urlParams.get('pbnOutputUrl');
-  const coloredOutputUrl = urlParams.get('coloredOutputUrl');
-  const colorKeyUrl = urlParams.get('colorKeyUrl');
-
-  const [pbnOutputError, setPbnOutputError] = useState(false);
-  const [coloredOutputError, setColoredOutputError] = useState(false);
-  const [colorKeyError, setColorKeyError] = useState(false);
+  const pbnOutputUrl = decodeURIComponent(urlParams.get('pbnOutputUrl'));
+  const coloredOutputUrl = decodeURIComponent(urlParams.get('coloredOutputUrl'));
+  const colorKeyUrl = decodeURIComponent(urlParams.get('colorKeyUrl'));
 
   console.log("PBN Output URL:", pbnOutputUrl);
   console.log("Colored Output URL:", coloredOutputUrl);
@@ -27,30 +22,24 @@ function ResultsPage() {
               src={pbnOutputUrl}
               alt="PBN Output"
               style={{ maxWidth: '100%' }}
-              onError={() => setPbnOutputError(true)}
             />
           )}
-          {pbnOutputError && <p>Error loading PBN Output image.</p>}
           <h3>Colored Output</h3>
           {coloredOutputUrl && (
             <img
               src={coloredOutputUrl}
               alt="Colored Output"
               style={{ maxWidth: '100%' }}
-              onError={() => setColoredOutputError(true)}
             />
           )}
-          {coloredOutputError && <p>Error loading Colored Output image.</p>}
           <h3>Color Key</h3>
           {colorKeyUrl && (
             <img
               src={colorKeyUrl}
               alt="Color Key"
               style={{ maxWidth: '100%' }}
-              onError={() => setColorKeyError(true)}
             />
           )}
-          {colorKeyError && <p>Error loading Color Key image.</p>}
         </Col>
       </Row>
     </Container>

@@ -1,21 +1,30 @@
 import React, { useState } from 'react';
 import { Container, Row, Col, Button, Form } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 
 function MainPageBody() {
   const [image, setImage] = useState(null);
-  const [imagePath, setImagePath] = useState('');
+  const [imageName, setImageName] = useState('');
   const [difficulty, setDifficulty] = useState('easy');
+  const navigate = useNavigate();
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       setImage(file);
-      setImagePath(URL.createObjectURL(file));
     }
+  };
+
+  const handleImageNameChange = (e) => {
+    setImageName(e.target.value);
   };
 
   const handleDifficultyChange = (e) => {
     setDifficulty(e.target.value);
+  };
+
+  const handleUploadClick = () => {
+    document.querySelector('input[type=file]').click();
   };
 
   const handleSubmit = async () => {
@@ -23,23 +32,35 @@ function MainPageBody() {
       alert('Please select an image to upload.');
       return;
     }
+
+    if (!imageName) {
+      alert('Please enter a name for the image.');
+      return;
+    }
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('You are not logged in. Please log in to upload an image.');
+      return;
+    }
+
     const formData = new FormData();
     formData.append('image', image);
-    formData.append('imagePath', imagePath);
+    formData.append('name', imageName);
     formData.append('difficulty', difficulty);
 
     try {
       const response = await fetch('http://localhost:4000/api/generatePBN', {
         method: 'POST',
         body: formData,
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
       });
       if (response.ok) {
         const data = await response.json();
-
-        const queryString = `?pbnOutputUrl=${data.pbnOutputUrl}&coloredOutputUrl=${data.coloredOutputUrl}&colorKeyUrl=${data.colorKeyUrl}`;
-        const newUrl = `/results${queryString}`;
-
-        window.location.href = newUrl;
+        const queryString = `?pbnOutputUrl=${encodeURIComponent(data.pbnOutputUrl)}&coloredOutputUrl=${encodeURIComponent(data.coloredOutputUrl)}&colorKeyUrl=${encodeURIComponent(data.colorKeyUrl)}`;
+        navigate(`/results${queryString}`);
       } else {
         const data = await response.json();
         alert('PBN generation failed: ' + data.message);
@@ -57,8 +78,14 @@ function MainPageBody() {
           <h1 className="fw-bold">Welcome to Your Site</h1>
           <p>Upload your image to create a unique paint-by-numbers masterpiece.</p>
           <div className="d-grid gap-2">
+            <Form.Control
+              type="text"
+              placeholder="Enter image name"
+              value={imageName}
+              onChange={handleImageNameChange}
+            />
             <input type="file" accept="image/*" className="form-control" onChange={handleImageChange} hidden />
-            <Button variant="primary" onClick={() => document.querySelector('input[type=file]').click()}>Upload Photo</Button>
+            <Button variant="primary" onClick={handleUploadClick}>Upload Photo</Button>
             <Form.Select aria-label="Difficulty select" value={difficulty} onChange={handleDifficultyChange}>
               <option value="easy">Easy</option>
               <option value="medium">Medium</option>
@@ -68,7 +95,6 @@ function MainPageBody() {
           </div>
           {image && (
             <div className="mt-3">
-              <img src={URL.createObjectURL(image)} alt="Uploaded" style={{ maxWidth: '100%', maxHeight: '200px' }} />
             </div>
           )}
         </Col>
