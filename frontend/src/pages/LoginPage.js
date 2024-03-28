@@ -2,15 +2,17 @@ import React from 'react';
 import LoginForm from '../components/LoginForm';
 
 const LoginPage = () => {
+  // Function to handle login success
   const handleLoginSuccess = (token) => {
+    // Store token in local storage
     localStorage.setItem('token', token);
 
+    // Redirect to home page
     window.location = '/';
   };
 
   return (
     <div>
-      <h1>Login</h1>
       <LoginForm onLoginSuccess={handleLoginSuccess} />
     </div>
   );

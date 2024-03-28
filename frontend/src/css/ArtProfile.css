@@ -1,0 +1,44 @@
+@import 'bootstrap/dist/css/bootstrap.min.css';
+
+body {
+    background-color: #FFF3E0;
+    color: #212529;
+}
+
+.main-page-content {
+    padding-top: 30px;
+    padding-bottom: 30px;
+    background-color: transparent;
+}
+
+.art-card {
+    transition: transform 0.2s ease-in-out;
+    cursor: pointer;
+}
+
+.art-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card-img-top {
+    height: 250px !important;
+    width: 100%;
+    object-fit: cover;
+}
+
+.card-body {
+    padding: 15px;
+}
+
+.card-title {
+    margin-bottom: 0;
+    font-size: 1.2rem;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .card-img-top {
+        height: 200px !important;
+    }
+}
