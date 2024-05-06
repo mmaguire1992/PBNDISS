@@ -3,7 +3,7 @@ import numpy as np
 from skimage import io, color
 import matplotlib.pyplot as plt
 
-def load_image(image_path: str) -> np.ndarray:
+def load_image(image_path: str):
     # Check if the image file exists
     if not os.path.exists(image_path):
         raise FileNotFoundError(f"Image file not found: {image_path}")
@@ -22,12 +22,7 @@ def load_image(image_path: str) -> np.ndarray:
         # Handle errors during image loading
         raise IOError(f"Failed to load the image from {image_path}. Error: {e}")
 
-def convert_to_ycbcr(image: np.ndarray) -> np.ndarray:
-    # Ensure the input image is a NumPy array
-    if not isinstance(image, np.ndarray):
-        raise TypeError("The image must be a NumPy array for conversion.")
-    # Convert the image to YCbCr colour space
-    return color.rgb2ycbcr(image)
+
 
 def save_image(image: np.ndarray, path: str):
     # Ensure the input image is a NumPy array

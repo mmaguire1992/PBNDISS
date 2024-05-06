@@ -1,5 +1,5 @@
 import React from 'react';
-import { Container, Row, Col, Card } from 'react-bootstrap';
+import { Container, Row, Col, Card, Alert } from 'react-bootstrap';
 import '../css/MainPageBody.css'; 
 
 function ResultsPage() {
@@ -9,6 +9,21 @@ function ResultsPage() {
   const colouredOutputUrl = decodeURIComponent(urlParams.get('colouredOutputUrl'));
   const colourKeyUrl = decodeURIComponent(urlParams.get('colourKeyUrl')); 
 
+  // Check if any URL is missing
+  if (!pbnOutputUrl || !colouredOutputUrl || !colourKeyUrl) {
+    return (
+      <Container fluid className="main-page-content results-top-padding">
+        <Row className="justify-content-center align-items-center min-vh-100">
+          <Col md={8} lg={6} className="overlay">
+            <Alert variant="danger">
+              Error loading Image
+            </Alert>
+          </Col>
+        </Row>
+      </Container>
+    );
+  }
+
   return (
     <Container fluid className="main-page-content results-top-padding">
       <Row className="justify-content-center align-items-center min-vh-100">
@@ -16,16 +31,10 @@ function ResultsPage() {
           <Card className="result-card">
             <Card.Body>
               <h1 className="main-heading">Your Results</h1>
-              {/* Render sections for each generated image if URLs are available */}
-              {pbnOutputUrl && (
-                <ResultSection title="Paint by Numbers Output" imageUrl={pbnOutputUrl} />
-              )}
-              {colouredOutputUrl && (
-                <ResultSection title="Coloured Output" imageUrl={colouredOutputUrl} />
-              )}
-              {colourKeyUrl && (
-                <ResultSection title="Colour Key" imageUrl={colourKeyUrl} />
-              )}
+              {/* Render sections for each generated image */}
+              <ResultSection title="Paint by Numbers Output" imageUrl={pbnOutputUrl} />
+              <ResultSection title="Coloured Output" imageUrl={colouredOutputUrl} />
+              <ResultSection title="Colour Key" imageUrl={colourKeyUrl} />
             </Card.Body>
           </Card>
         </Col>

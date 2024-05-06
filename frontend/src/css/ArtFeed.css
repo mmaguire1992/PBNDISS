@@ -1,0 +1,117 @@
+.art-feed {
+    padding: 1rem;
+    background: #FAFAFA;
+}
+
+.art-feed-upload-section {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+}
+
+.art-feed-error-message, .art-feed-loading-message {
+    color: #E74C3C;
+    text-align: center;
+    margin-top: 20px;
+}
+
+.art-feed-art-cards-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px; 
+    align-items: center;
+}
+
+.art-feed-art-card {
+    background: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease-in-out;
+    width: 50%; 
+}
+
+.art-feed-art-card:hover {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
+.art-feed-art-card img {
+    width: 100%; 
+    display: block;
+    aspect-ratio: 1; 
+    object-fit: cover;
+}
+
+.art-title-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 10px; 
+}
+
+.art-title {
+    font-size: 1.8rem;
+}
+
+.art-feed-art-card-info {
+    padding: 10px;
+    display: flex;
+    justify-content: center; 
+    align-items: center; 
+    flex-direction: column;
+    border-top: 1px solid #EEEEEE;
+    text-align: center; 
+}
+
+.art-feed-like-comment-icons {
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    color: #9E9E9E;
+}
+
+.art-feed-like-comment-icons i {
+    margin-right: 8px;
+    cursor: pointer;
+}
+
+.art-feed-like-comment-icons i:hover {
+    color: #5851DB;
+}
+
+@media (max-width: 768px) {
+    .art-feed-art-card {
+        width: 80%; 
+    }
+
+    .art-feed-art-card-info {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .art-feed-like-comment-icons {
+        margin-top: 10px;
+    }
+}
+
+.btn-orange {
+    background-color: #ffa500;
+    border-color: #ffa500;
+    color: #fff; 
+    margin-right: 10px; 
+}
+
+.btn-blue {
+    background-color: #0056b3; 
+    border-color: #0056b3; 
+    color: #fff; 
+    margin-right: 10px; 
+}

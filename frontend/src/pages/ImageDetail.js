@@ -1,13 +1,27 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { Container, Row, Col, Card, Image } from 'react-bootstrap';
-import '../css/MainPageBody.css'; 
+import { Container, Row, Col, Card, Image, Alert } from 'react-bootstrap';
 
+// ImageDetail component definition
 function ImageDetail() {
     // Extracting image data from location state
     const { state } = useLocation();
     const { image } = state;
 
+    // Check if image data exists
+    if (!image) {
+        return (
+            <Container fluid className="main-page-content">
+                <Row className="justify-content-center align-items-center min-vh-100">
+                    <Col lg={10}>
+                        <Alert variant="danger">Image data not found!</Alert>
+                    </Col>
+                </Row>
+            </Container>
+        );
+    }
+
+    // JSX return
     return (
         <Container fluid className="main-page-content image-detail-top-padding">
             <Row className="justify-content-center align-items-center min-vh-100">
@@ -60,17 +74,30 @@ function ImageDetail() {
 
 // Component to wrap images with download and print functionality
 const ImageWrapper = ({ src, title, downloadText, printText, fileName }) => {
-    const [showConfirmation, setShowConfirmation] = useState(false);
 
     // Function to handle image download
-    const handleDownload = () => {
-        // Perform download action
-        const link = document.createElement('a');
-        link.href = src;
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+    const handleDownload = async () => {
+        try {
+            // Fetch image data
+            const response = await fetch(src);
+            const blob = await response.blob();
+            
+            // Create a URL for the blob
+            const blobUrl = URL.createObjectURL(blob);
+
+            // Create a link element and trigger download
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+
+            // Cleanup
+            document.body.removeChild(link);
+            URL.revokeObjectURL(blobUrl);
+        } catch (error) {
+            console.error('Error downloading image:', error);
+        }
     };
 
     // Function to handle image print
@@ -86,11 +113,9 @@ const ImageWrapper = ({ src, title, downloadText, printText, fileName }) => {
         <Card.Body className="text-center">
             <Card.Title>{title}</Card.Title>
             <Image src={src} fluid className="mb-3 img-detail" />
-            {/* Button for image download */}
             <button className="btn btn-primary w-100" onClick={handleDownload}>
                 {downloadText}
             </button>
-            {/* Button for image print */}
             <button className="btn btn-secondary w-100 mt-2" onClick={handlePrint}>
                 {printText}
             </button>

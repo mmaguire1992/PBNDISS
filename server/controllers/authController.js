@@ -1,37 +1,59 @@
-const jwt = require('jsonwebtoken');
+const jwt = require('jsonwebtoken'); 
 const bcrypt = require('bcryptjs'); 
-const Customer = require('../models/customer'); 
+const Customer = require('../models/customer');
+const passwordValidator = require('password-validator'); 
+
+// Create a password schema for validating passwords
+const passwordSchema = new passwordValidator();
+
+// Add password requirements to the schema
+passwordSchema
+  .is().min(8)                                    // Minimum length 8
+  .is().max(100)                                  // Maximum length 100
+  .has().uppercase()                              // Must have uppercase letters
+  .has().lowercase()                              // Must have lowercase letters
+  .has().digits()                                 // Must have digits
+  .has().symbols();                               // Must have special characters
 
 // Function to sign JWT token
 const signToken = id => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN
+    expiresIn: process.env.JWT_EXPIRES_IN // Setting expiration time for the token
   });
 };
 
 // Controller function for user signup
 exports.signup = async (req, res) => {
   try {
-    const { name, email, password } = req.body; // Destructuring name, email, and password from request body
-    const newUser = await Customer.create({ // Creating a new customer document in the database
+    const { name, email, password } = req.body;
+    // Validate password against the password schema
+    if (!passwordSchema.validate(password)) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Password does not meet security requirements: 8-100 characters, including uppercase, lowercase, digits, and symbols.'
+      });
+    }
+    // Continue with user creation
+    const newUser = await Customer.create({
       name,
       email,
       password
     });
-
-    const token = signToken(newUser._id); // Signing JWT token for the newly created user
-
-    res.status(201).json({ // Sending response with status, token, and user data
+    // Generate JWT token for the newly created user
+    const token = signToken(newUser._id);
+    // Send success response with token and user data
+    res.status(201).json({
       status: 'success',
       token,
       data: {
         user: newUser
       }
     });
-  } catch (error) { // Handling errors
-    res.status(400).json({ // Sending error response
+  } catch (error) {
+    // If an error occurs during signup process, send error response
+    res.status(400).json({
       status: 'error',
-      message: error.message
+      message: 'Registration failed email already registered' 
     });
   }
 };
@@ -39,41 +61,51 @@ exports.signup = async (req, res) => {
 // Controller function for user login
 exports.login = async (req, res) => {
   try {
-    const { email, password } = req.body; // Destructuring email and password from request body
+    const { email, password } = req.body;
 
-    if (!email || !password) { // Checking if email or password is missing
-      return res.status(400).json({ // Sending error response
+    if (!email || !password) {
+      return res.status(400).json({
         status: 'error',
-        message: 'Please provide email and password!'
+        message: 'Both email and password must be provided.'
       });
     }
 
-    const user = await Customer.findOne({ email }).select('+password'); // Finding user by email and selecting password
+    const user = await Customer.findOne({ email }).select('+password');
 
-    if (!user || !(await user.correctPassword(password, user.password))) { // Checking if user exists and password is correct
-      return res.status(401).json({ // Sending error response
+    // Check if user exists and if password is correct
+    if (!user) {
+      return res.status(404).json({
         status: 'error',
-        message: 'Incorrect email or password'
+        message: 'No user found with this email. Please register.'
+      });
+    } else if (!(await bcrypt.compare(password, user.password))) {
+      return res.status(401).json({
+        status: 'error',
+        message: 'Incorrect password. Access denied.'
       });
     }
 
-    const token = signToken(user._id); // Signing JWT token for the authenticated user
+    // Generate JWT token for the logged-in user
+    const token = signToken(user._id);
 
-    res.status(200).json({ // Sending response with status and token
+    // Send success response with token
+    res.status(200).json({
       status: 'success',
       token
     });
-  } catch (error) { // Handling errors
-    res.status(400).json({ // Sending error response
+  } catch (error) {
+    // If an error occurs during login process, send error response
+    res.status(400).json({
       status: 'error',
-      message: error.message
+      message: 'Login process failed: ' + error.message
     });
   }
 };
 
 // Controller function for user logout
 exports.logout = (req, res) => {
-  res.status(200).json({ status: 'success', token: null }); // Sending success response with null token
+  // Send success response for user logout
+  res.status(200).json({ status: 'success', message: 'Logout successful.' });
 };
 
 // Middleware function to protect routes
@@ -81,37 +113,93 @@ exports.protect = async (req, res, next) => {
   try {
     let token;
 
-    if (
-      req.headers.authorization &&
-      req.headers.authorization.startsWith('Bearer')
-    ) { // Checking if Authorisation header starts with 'Bearer'
-      token = req.headers.authorization.split(' ')[1]; // Extracting token from Authorisation header
+    // Extract JWT token from request headers
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+      token = req.headers.authorization.split(' ')[1];
     }
 
-    if (!token) { // Checking if token exists
-      return res.status(401).json({ // Sending error response
+    if (!token) {
+      return res.status(401).json({
         status: 'error',
-        message: 'You are not logged in! Please log in to get access.'
+        message: 'You are not logged in. Please log in to get access.'
       });
     }
 
-    const decoded = await jwt.verify(token, process.env.JWT_SECRET); // Verifying JWT token
+    // Verify the authenticity of the JWT token
+    const decoded = await jwt.verify(token, process.env.JWT_SECRET);
 
-    const currentUser = await Customer.findById(decoded.id); // Finding user by decoded token ID
+    // Find the user associated with the token
+    const currentUser = await Customer.findById(decoded.id);
 
-    if (!currentUser) { // Checking if user exists
-      return res.status(401).json({ // Sending error response
+    if (!currentUser) {
+      return res.status(401).json({
         status: 'error',
-        message: 'The user belonging to this token does no longer exist.'
+        message: 'The user belonging to this token no longer exists.'
       });
     }
 
-    req.user = currentUser; // Assigning current user to request object
-    next(); // Calling next middleware
-  } catch (error) { // Handling errors
-    res.status(401).json({ // Sending error response
+    // Set the current user in the request object
+    req.user = currentUser;
+    next();
+  } catch (error) {
+    // If an error occurs during token verification, send error response
+    res.status(401).json({
       status: 'error',
-      message: 'Invalid token. Please log in again.'
+      message: 'Token validation failed. Please log in again.'
+    });
+  }
+};
+
+// Controller function for changing user password
+exports.changePassword = async (req, res) => {
+  try {
+    const user = await Customer.findById(req.user.id).select('+password');
+    const { currentPassword, newPassword } = req.body;
+    // Validate the new password against the password schema
+    if (!passwordSchema.validate(newPassword)) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'New password does not meet security requirements.'
+      });
+    }
+    // Continue with password change
+    if (!(await user.correctPassword(currentPassword, user.password))) {
+      return res.status(401).json({
+        status: 'error',
+        message: 'Your current password is incorrect.'
+      });
+    }
+    user.password = newPassword;
+    await user.save();
+    // Send success response for password change
+    res.status(200).json({
+      status: 'success',
+      message: 'Your password has been updated successfully.'
+    });
+  } catch (error) {
+    // If an error occurs during password change process, send error response
+    res.status(500).json({
+      status: 'error',
+      message: 'Password update failed: ' + error.message
+    });
+  }
+};
+
+// Controller function for deleting user account
+exports.deleteAccount = async (req, res) => {
+  try {
+    // Find and delete the user account
+    await Customer.findByIdAndDelete(req.user.id);
+    // Send success response for account deletion
+    res.status(204).json({
+      status: 'success',
+      message: 'Your account has been deleted successfully.'
+    });
+  } catch (error) {
+    // If an error occurs during account deletion process, send error response
+    res.status(500).json({
+      status: 'error',
+      message: 'Account deletion failed: ' + error.message
     });
   }
 };

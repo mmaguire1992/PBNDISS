@@ -24,9 +24,9 @@ app.use(express.json());
 
 // CORS configuration for all routes
 app.use(cors({
-  origin: '*', 
-  methods: ['GET', 'POST', 'PUT', 'DELETE'], //  allowed methods
-  credentials: true, // True to send credentials
+  origin: '*', // Consider specifying your frontend's origin in production
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  credentials: true, // True to send credentials such as cookies
 }));
 
 // Define routes for image-related endpoints
@@ -35,4 +35,4 @@ app.use('/api', imageRouter);
 // Define routes for user-related endpoints
 app.use('/api/users', userRouter);
 
-module.exports = app;
+module.exports = app; 

@@ -4,7 +4,6 @@ from skimage.segmentation import find_boundaries
 from skimage.morphology import skeletonize
 from scipy.ndimage import center_of_mass
 from sklearn.cluster import KMeans
-from typing import List
 import os
 
 def rgb_to_hex(rgb):
@@ -33,7 +32,7 @@ def create_pbn_output(image: np.ndarray, segments: np.ndarray, kmeans: KMeans) -
 
         # Search for a suitable label position around the centre of mass
         offset_y, offset_x = 0, 0
-        max_offset = 50
+        max_offset = 25
         found_spot = False
 
         while not found_spot and abs(offset_y) <= max_offset and abs(offset_x) <= max_offset:
@@ -66,18 +65,22 @@ def create_coloured_output(image: np.ndarray, segments: np.ndarray, kmeans: KMea
 
     return coloured_output
 
-def create_colour_key(clustered_colours: List[np.ndarray], output_directory: str) -> str:
-    # Updated to include colour codes in the colour key
+def create_colour_key(clustered_colours: np.ndarray, output_directory: str) -> str:
     num_colours = len(clustered_colours)
-    fig, ax = plt.subplots(figsize=(20, num_colours * 1.5))  # Adjusted for additional text
+    num_cols = 2  # Number of columns in the grid
+    num_rows = (num_colours + num_cols - 1) // num_cols  # Calculate number of rows needed
+    
+    fig, ax = plt.subplots(figsize=(10, num_rows * 1.5))  # Adjusted for additional text
 
     for idx, colour in enumerate(clustered_colours):
+        row = idx // num_cols
+        col = idx % num_cols
         colour_code = rgb_to_hex(colour)
-        ax.fill_between([0, 5], idx * 1.5, idx * 1.5 + 1, color=np.clip(colour / 255, 0, 1))
-        ax.text(0.5, idx * 1.5 + 0.5, f"{idx + 1} - {colour_code}", color='black', ha='center', va='center')
+        ax.fill_between([col, col + 1], num_rows - row - 1, num_rows - row, color=np.clip(colour / 255, 0, 1))
+        ax.text(col + 0.5, num_rows - row - 0.5, f"{idx + 1}\n{colour_code}", color='black', ha='center', va='center', fontsize=20)  #  fontsize 
 
-    ax.set_xlim(0, 1)
-    ax.set_ylim(0, num_colours * 1.5)
+    ax.set_xlim(0, num_cols)
+    ax.set_ylim(0, num_rows)
     ax.axis('off')
 
     # Save the colour key image to the output directory

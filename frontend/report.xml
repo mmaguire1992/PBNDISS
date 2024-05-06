@@ -1,0 +1,3 @@
+<testsuite name="Mocha Tests" tests="1" failures="0" errors="0" skipped="0" timestamp="Sun, 05 May 2024 21:59:53 GMT" time="3.589">
+<testcase classname="Registration Functionality" name="should register a new user" file="/Users/michaelmaguire/Library/Mobile Documents/com~apple~CloudDocs/new PbnDss/PBNDiss/frontend/src/tests/register.test.js" time="0.971"/>
+</testsuite>

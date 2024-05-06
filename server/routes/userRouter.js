@@ -11,4 +11,10 @@ router.post('/login', authController.login);
 // Define route for user logout
 router.get('/logout', authController.logout);
 
+// Define route for changing password
+router.patch('/changePassword', authController.protect, authController.changePassword);
+
+// Define route for deleting account
+router.delete('/deleteAccount', authController.protect, authController.deleteAccount);
+
 module.exports = router;

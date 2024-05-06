@@ -1,10 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 // Logout component to handle user logout
 const Logout = () => {
   // Get navigate function from react-router-dom
   const navigate = useNavigate();
+  const [error, setError] = useState(null); // New state for error handling
 
   // Effect hook to handle logout process
   useEffect(() => {
@@ -29,12 +30,12 @@ const Logout = () => {
           // Show success message
           window.alert('Logout successful');
         } else {
-          // If logout failed, log the error
-          console.error('Logout failed:', response.statusText);
+          // If logout failed, set error state with the error message
+          setError(`Logout failed: ${response.statusText}`);
         }
       } catch (error) {
-        // If logout failed due to network or other errors, log the error
-        console.error('Logout failed:', error);
+        // If logout failed due to network or other errors, set error state with the error message
+        setError(`Logout failed: ${error.message}`);
       }
     };
 
@@ -42,9 +43,15 @@ const Logout = () => {
     handleLogout();
   }, [navigate]); // Re-run effect when navigate function changes
 
-  // Render a message while logging out
+  //  message while logging out
   return (
-    <div>Logging out...</div>
+    <div id="logout-component">
+      {error ? (
+        <div>Error: {error}</div>
+      ) : (
+        <div>Logging out...</div>
+      )}
+    </div>
   );
 };
 
